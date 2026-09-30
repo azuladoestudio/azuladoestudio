@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quiero mi web · Azulado Estudio</title>
+  <meta name="description" content="Contame de tu negocio y te preparo un boceto de tu página web, gratis y sin compromiso.">
+  <meta name="theme-color" content="#17143D">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Archivo+Black&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/estilos.css">
+  <style>
+    body { background: var(--marino); min-height: 100svh; display: flex; flex-direction: column; }
+    .barra { position: sticky; background: var(--marino); }
+    .barra nav a.salir { display: inline; color: rgba(255,255,255,.7); font-size: 14px; }
+
+    main { flex: 1; display: flex; justify-content: center; padding: 20px 16px 60px; }
+    .tarjeta {
+      width: min(680px, 100%); background: var(--lavanda); border-radius: 26px;
+      padding: clamp(26px, 5vw, 48px); align-self: flex-start;
+      box-shadow: 0 40px 80px -40px rgba(0,0,0,.6);
+    }
+
+    /* Progreso */
+    .progreso { display: flex; align-items: center; gap: 14px; margin-bottom: 34px; }
+    .progreso-barra { flex: 1; height: 8px; border-radius: 99px; background: var(--borde); overflow: hidden; }
+    .progreso-barra i { display: block; height: 100%; width: 0; border-radius: 99px; background: linear-gradient(90deg, var(--azul), var(--violeta)); transition: width .45s ease; }
+    .progreso span { font-size: 13px; font-weight: 600; color: var(--texto-suave); white-space: nowrap; }
+
+    /* Pasos */
+    .paso { display: none; animation: entrar .4s ease; }
+    .paso.activo { display: block; }
+    @keyframes entrar { from { opacity: 0; transform: translateX(18px); } to { opacity: 1; transform: none; } }
+    .paso h1 { font-size: clamp(26px, 4.5vw, 36px); margin-bottom: 8px; }
+    .paso > p.ayuda { color: var(--texto-suave); margin-bottom: 28px; font-size: 17px; }
+
+    /* Campos */
+    .campo { margin-bottom: 22px; }
+    .campo > label, .campo > .etiqueta-grupo { display: block; font-weight: 600; margin-bottom: 8px; font-size: 16px; }
+    .campo .opcional { font-weight: 400; color: var(--texto-suave); font-size: 14px; }
+    .campo input[type=text], .campo input[type=tel], .campo input[type=email], .campo textarea {
+      width: 100%; padding: 15px 16px; border-radius: 14px; border: 1.5px solid var(--borde);
+      background: var(--blanco); font: 16px "Archivo", sans-serif; color: var(--texto);
+      transition: border-color .2s ease, box-shadow .2s ease;
+    }
+    .campo textarea { min-height: 110px; resize: vertical; }
+    .campo input:focus, .campo textarea:focus { outline: 0; border-color: var(--violeta); box-shadow: 0 0 0 4px rgba(140,82,232,.15); }
+    .campo input::placeholder, .campo textarea::placeholder { color: #A5A1C4; }
+
+    /* Opciones grandes (paso 1) */
+    .opciones-grandes { display: grid; gap: 12px; }
+    .opcion-grande input { position: absolute; opacity: 0; pointer-events: none; }
+    .opcion-grande label {
+      display: flex; align-items: center; gap: 16px; padding: 18px 20px; border-radius: 16px; cursor: pointer;
+      background: var(--blanco); border: 1.5px solid var(--borde); transition: border-color .2s ease, transform .15s ease, background .2s ease;
+    }
+    .opcion-grande label:hover { border-color: var(--violeta-claro); transform: translateY(-1px); }
+    .opcion-grande .icono { width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; background: #ECE6FB; color: var(--violeta); flex: none; }
+    .opcion-grande .icono svg { width: 24px; height: 24px; }
+    .opcion-grande b { display: block; font-size: 17px; }
+    .opcion-grande small { color: var(--texto-suave); font-size: 14px; }
+    .opcion-grande input:checked + label { border-color: var(--violeta); background: #F7F3FF; box-shadow: 0 0 0 4px rgba(140,82,232,.12); }
+    .opcion-grande input:checked + label .icono { background: linear-gradient(135deg, var(--azul), var(--violeta)); color: var(--blanco); }
+    .opcion-grande input:focus-visible + label { outline: 2px solid var(--violeta); outline-offset: 2px; }
+
+    /* Chips */
+    .chips { display: flex; flex-wrap: wrap; gap: 10px; }
+    .chip input { position: absolute; opacity: 0; pointer-events: none; }
+    .chip label {
+      display: inline-flex; align-items: center; gap: 8px; padding: 11px 16px; border-radius: 999px; cursor: pointer;
+      background: var(--blanco); border: 1.5px solid var(--borde); font-size: 15px; transition: all .2s ease; user-select: none;
+    }
+    .chip label:hover { border-color: var(--violeta-claro); }
+    .chip input:checked + label { background: var(--marino); color: var(--blanco); border-color: var(--marino); }
+    .chip input:checked + label::before { content: "✓"; font-weight: 700; color: var(--llamita); }
+    .chip input:focus-visible + label { outline: 2px solid var(--violeta); outline-offset: 2px; }
+
+    .campo-otro { margin-top: 12px; display: none; }
+    .campo-otro.visible { display: block; }
+
+    .error { display: none; color: #C2255C; font-size: 14px; font-weight: 500; margin-top: 8px; }
+    .error.visible { display: block; }
+
+    /* Navegación */
+    .navegacion { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 34px; }
+    .navegacion .boton-borde { padding: 14px 20px; }
+    .navegacion .espacio { flex: 1; }
+    .aviso { font-size: 13px; color: var(--texto-suave); margin-top: 18px; text-align: center; }
+
+    .oculto { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <header class="barra">
+    <div class="contenedor">
+      <a href="index.html" class="marca" aria-label="Azulado Estudio, volver al inicio">
+        <svg viewBox="12 4 78 86" aria-hidden="true"><defs><clipPath id="cb"><circle cx="42" cy="60" r="28"/></clipPath></defs><circle cx="42" cy="60" r="28" fill="#5A80FF"/><path d="M70 6 C 74 18 88 30 86 50 C 85 62 80 68 80 74 L 80 80 Q 80 88 70 88 Q 60 88 60 80 L 60 62 C 56 52 58 40 64 30 C 66 26 68 20 70 6 Z" fill="#A97CFF"/><path d="M70 6 C 74 18 88 30 86 50 C 85 62 80 68 80 74 L 80 80 Q 80 88 70 88 Q 60 88 60 80 L 60 62 C 56 52 58 40 64 30 C 66 26 68 20 70 6 Z" fill="#3A2AB0" clip-path="url(#cb)"/><path d="M71 42 C 74 49 79 53 78 61 C 77 67 73 71 70 71 C 66 71 64 67 65 62 C 66 56 70 51 71 42 Z" fill="#F1E8FF"/></svg>
+        <span class="marca-texto"><b>azulado</b><span>estudio</span></span>
+      </a>
+      <nav><a href="index.html" class="salir">← Volver</a></nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="tarjeta">
+      <div class="progreso" aria-hidden="true">
+        <div class="progreso-barra"><i id="barra-progreso"></i></div>
+        <span id="texto-progreso">Paso 1 de 6</span>
+      </div>
+
+      <!--
+        Formulario de Netlify: al publicarse en Netlify, cada envío aparece en
+        Netlify > Forms > "quiero-mi-web" y te llega por mail si activás la notificación.
+      -->
+      <form id="formulario" name="quiero-mi-web" method="POST" action="/gracias.html" data-netlify="true" netlify-honeypot="campo-trampa" novalidate>
+        <input type="hidden" name="form-name" value="quiero-mi-web">
+        <input type="hidden" name="subject" id="asunto" value="Nuevo pedido de web · Azulado Estudio">
+        <p class="oculto"><label>No completar: <input name="campo-trampa"></label></p>
+
+        <!-- Los grupos de casillas se juntan en estos campos antes de enviar -->
+        <input type="hidden" name="objetivos" id="h-objetivos">
+        <input type="hidden" name="estilo" id="h-estilo">
+
+        <!-- PASO 1 · Qué tenés -->
+        <section class="paso activo" data-paso="1">
+          <h1 class="titulo">¡Hola! ¿Qué tenés?</h1>
+          <p class="ayuda">Elegí la opción que más se parezca a lo tuyo.</p>
+          <div class="opciones-grandes" role="radiogroup" aria-label="Qué tenés">
+            <div class="opcion-grande">
+              <input type="radio" name="tipo" id="t-emprendimiento" value="Emprendimiento" required>
+              <label for="t-emprendimiento">
+                <span class="icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c1 3 4 5 4 9a4 4 0 0 1-8 0c0-2 1-3 1-5 1 1 2 2 3 2 0-2-1-4 0-6z"/><path d="M8 21h8"/></svg></span>
+                <span><b>Tengo un emprendimiento</b><small>Vendo por redes, por encargo o desde casa</small></span>
+              </label>
+            </div>
+            <div class="opcion-grande">
+              <input type="radio" name="tipo" id="t-local" value="Negocio con local">
+              <label for="t-local">
+                <span class="icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1.5-5h15L21 9"/><path d="M4 9v11h16V9"/><path d="M3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/><path d="M10 20v-5h4v5"/></svg></span>
+                <span><b>Tengo un negocio con local</b><small>Comercio, gastronomía, tienda, taller…</small></span>
+              </label>
+            </div>
+            <div class="opcion-grande">
+              <input type="radio" name="tipo" id="t-servicio" value="Profesional o servicio">
+              <label for="t-servicio">
+                <span class="icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M3 13h18"/></svg></span>
+                <span><b>Soy profesional o doy un servicio</b><small>Estética, salud, oficios, consultoría…</small></span>
+              </label>
+            </div>
+            <div class="opcion-grande">
+              <input type="radio" name="tipo" id="t-idea" value="Todavía es una idea">
+              <label for="t-idea">
+                <span class="icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0 0 12 3z"/></svg></span>
+                <span><b>Todavía es una idea</b><small>Estoy por arrancar y quiero salir con todo</small></span>
+              </label>
+            </div>
+          </div>
+          <p class="error" data-error="tipo">Elegí una opción para seguir.</p>
+        </section>
+
+        <!-- PASO 2 · El negocio -->
+        <section class="paso" data-paso="2">
+          <h1 class="titulo" data-texto-idea="Contame de tu idea">Contame de tu negocio</h1>
+          <p class="ayuda">Con esto ya me puedo hacer una idea de por dónde arrancar.</p>
+
+          <div class="campo">
+            <label for="negocio" data-texto-idea="¿Cómo se va a llamar? (si ya lo sabés)">¿Cómo se llama?</label>
+            <input type="text" id="negocio" name="negocio" placeholder="Ej: La Centena" required autocomplete="organization">
+          </div>
+
+          <div class="campo">
+            <span class="etiqueta-grupo">¿De qué rubro es?</span>
+            <div class="chips" role="radiogroup" aria-label="Rubro">
+              <div class="chip"><input type="radio" name="rubro" id="r1" value="Gastronomía" required><label for="r1">Gastronomía</label></div>
+              <div class="chip"><input type="radio" name="rubro" id="r2" value="Ropa y accesorios"><label for="r2">Ropa y accesorios</label></div>
+              <div class="chip"><input type="radio" name="rubro" id="r3" value="Belleza y estética"><label for="r3">Belleza y estética</label></div>
+              <div class="chip"><input type="radio" name="rubro" id="r4" value="Salud y bienestar"><label for="r4">Salud y bienestar</label></div>
+              <div class="chip"><input type="radio" name="rubro" id="r5" value="Vehículos"><label for="r5">Vehículos</label></div>
+              <div class="chip"><input type="radio" name="rubro" id="r6" value="Hogar y construcción"><label for="r6">Hogar y construcción</label></div>
+              <div class="chip"><input type="radio" name="rubro" id="r7" value="Servicios profesionales"><label for="r7">Servicios profesionales</label></div>
+              <div class="chip"><input type="radio" name="rubro" id="r8" value="Otro"><label for="r8">Otro</label></div>
+            </div>
+            <div class="campo-otro" id="rubro-otro-caja">
+              <input type="text" name="rubro-otro" id="rubro-otro" placeholder="¿Cuál?">
+            </div>
+            <p class="error" data-error="rubro">Elegí un rubro.</p>
+          </div>
+
+          <div class="campo">
+            <label for="que-ofrece" data-texto-idea="¿Qué vas a vender u ofrecer?">¿Qué vendés u ofrecés?</label>
+            <textarea id="que-ofrece" name="que-ofrece" placeholder="Contámelo como se lo contarías a un cliente nuevo" required></textarea>
+          </div>
+
+          <div class="campo">
+            <label for="ciudad">¿En qué ciudad estás?</label>
+            <input type="text" id="ciudad" name="ciudad" placeholder="Ej: Chajarí, Entre Ríos" required autocomplete="address-level2">
+          </div>
+        </section>
+
+        <!-- PASO 3 · Dónde estás hoy -->
+        <section class="paso" data-paso="3">
+          <h1 class="titulo">¿Dónde te encuentran hoy?</h1>
+          <p class="ayuda">Así veo qué tenés y aprovecho lo que ya funciona.</p>
+
+          <div class="campo">
+            <label for="instagram">Instagram <span class="opcional">(opcional)</span></label>
+            <input type="text" id="instagram" name="instagram" placeholder="@tunegocio">
+          </div>
+
+          <div class="campo">
+            <label for="otras-redes">Otras redes o links <span class="opcional">(opcional)</span></label>
+            <input type="text" id="otras-redes" name="otras-redes" placeholder="Facebook, TikTok, Google Maps…">
+          </div>
+
+          <div class="campo">
+            <span class="etiqueta-grupo">¿Ya tenés página web?</span>
+            <div class="chips">
+              <div class="chip"><input type="radio" name="tiene-web" id="w1" value="No" required><label for="w1">No</label></div>
+              <div class="chip"><input type="radio" name="tiene-web" id="w2" value="Sí, pero quiero una nueva"><label for="w2">Sí, pero quiero una nueva</label></div>
+            </div>
+            <p class="error" data-error="tiene-web">Elegí una opción.</p>
+          </div>
+
+          <div class="campo">
+            <span class="etiqueta-grupo">¿Tenés logo?</span>
+            <div class="chips">
+              <div class="chip"><input type="radio" name="tiene-logo" id="l1" value="Sí" required><label for="l1">Sí</label></div>
+              <div class="chip"><input type="radio" name="tiene-logo" id="l2" value="No"><label for="l2">No</label></div>
+              <div class="chip"><input type="radio" name="tiene-logo" id="l3" value="Tengo, pero no me convence"><label for="l3">Tengo, pero no me convence</label></div>
+            </div>
+            <p class="error" data-error="tiene-logo">Elegí una opción.</p>
+          </div>
+        </section>
+
+        <!-- PASO 4 · Qué tiene que hacer la web -->
+        <section class="paso" data-paso="4">
+          <h1 class="titulo">¿Qué querés que haga tu web?</h1>
+          <p class="ayuda">Marcá todo lo que te sirva. Podés elegir varias.</p>
+          <div class="campo">
+            <div class="chips" data-grupo="objetivos">
+              <div class="chip"><input type="checkbox" id="o1" value="Que me escriban por WhatsApp"><label for="o1">Que me escriban por WhatsApp</label></div>
+              <div class="chip"><input type="checkbox" id="o2" value="Mostrar productos o catálogo"><label for="o2">Mostrar productos o catálogo</label></div>
+              <div class="chip"><input type="checkbox" id="o3" value="Mostrar menú o carta"><label for="o3">Mostrar menú o carta</label></div>
+              <div class="chip"><input type="checkbox" id="o4" value="Ubicación y horarios"><label for="o4">Ubicación y horarios</label></div>
+              <div class="chip"><input type="checkbox" id="o5" value="Mostrar trabajos o fotos"><label for="o5">Mostrar trabajos o fotos</label></div>
+              <div class="chip"><input type="checkbox" id="o6" value="Reservas o turnos"><label for="o6">Reservas o turnos</label></div>
+              <div class="chip"><input type="checkbox" id="o7" value="Verme más profesional"><label for="o7">Verme más profesional</label></div>
+              <div class="chip"><input type="checkbox" id="o8" value="Aparecer en Google"><label for="o8">Aparecer en Google</label></div>
+            </div>
+            <p class="error" data-error="objetivos">Marcá al menos una.</p>
+          </div>
+        </section>
+
+        <!-- PASO 5 · Estilo -->
+        <section class="paso" data-paso="5">
+          <h1 class="titulo">¿Cómo te imaginás tu web?</h1>
+          <p class="ayuda">No hace falta que lo tengas claro. Cualquier pista me ayuda.</p>
+
+          <div class="campo">
+            <span class="etiqueta-grupo">¿Cómo te gustaría que se sienta? <span class="opcional">(podés elegir varias)</span></span>
+            <div class="chips" data-grupo="estilo">
+              <div class="chip"><input type="checkbox" id="e1" value="Elegante"><label for="e1">Elegante</label></div>
+              <div class="chip"><input type="checkbox" id="e2" value="Moderna"><label for="e2">Moderna</label></div>
+              <div class="chip"><input type="checkbox" id="e3" value="Cálida"><label for="e3">Cálida</label></div>
+              <div class="chip"><input type="checkbox" id="e4" value="Divertida"><label for="e4">Divertida</label></div>
+              <div class="chip"><input type="checkbox" id="e5" value="Minimalista"><label for="e5">Minimalista</label></div>
+              <div class="chip"><input type="checkbox" id="e6" value="Llamativa"><label for="e6">Llamativa</label></div>
+              <div class="chip"><input type="checkbox" id="e7" value="Que decida Azulado"><label for="e7">Que decidas vos</label></div>
+            </div>
+          </div>
+
+          <div class="campo">
+            <label for="colores">¿Colores que te representen? <span class="opcional">(opcional)</span></label>
+            <input type="text" id="colores" name="colores" placeholder="Ej: negro y dorado, los de mi logo…">
+          </div>
+
+          <div class="campo">
+            <label for="referencias">¿Alguna web o cuenta que te guste cómo se ve? <span class="opcional">(opcional)</span></label>
+            <input type="text" id="referencias" name="referencias" placeholder="Pegá links o nombres">
+          </div>
+        </section>
+
+        <!-- PASO 6 · Contacto -->
+        <section class="paso" data-paso="6">
+          <h1 class="titulo">¡Último paso!</h1>
+          <p class="ayuda">¿A dónde te mando el boceto?</p>
+
+          <div class="campo">
+            <label for="nombre">Tu nombre</label>
+            <input type="text" id="nombre" name="nombre" placeholder="¿Cómo te llamás?" required autocomplete="given-name">
+          </div>
+
+          <div class="campo">
+            <label for="whatsapp">Tu WhatsApp</label>
+            <input type="tel" id="whatsapp" name="whatsapp" placeholder="Ej: 3456 123456" required autocomplete="tel" inputmode="tel" pattern="[0-9+()\s-]{8,}">
+          </div>
+
+          <div class="campo">
+            <label for="email">Tu mail <span class="opcional">(opcional)</span></label>
+            <input type="email" id="email" name="email" placeholder="tunombre@gmail.com" autocomplete="email">
+          </div>
+
+          <div class="campo">
+            <span class="etiqueta-grupo">¿Para cuándo la necesitás?</span>
+            <div class="chips">
+              <div class="chip"><input type="radio" name="cuando" id="c1" value="Lo antes posible" required><label for="c1">Lo antes posible</label></div>
+              <div class="chip"><input type="radio" name="cuando" id="c2" value="Este mes"><label for="c2">Este mes</label></div>
+              <div class="chip"><input type="radio" name="cuando" id="c3" value="Sin apuro"><label for="c3">Sin apuro</label></div>
+            </div>
+            <p class="error" data-error="cuando">Elegí una opción.</p>
+          </div>
+
+          <div class="campo">
+            <label for="comentarios">¿Algo más que quieras contarme? <span class="opcional">(opcional)</span></label>
+            <textarea id="comentarios" name="comentarios" placeholder="Dudas, ideas, lo que quieras"></textarea>
+          </div>
+        </section>
+
+        <div class="navegacion">
+          <button type="button" class="boton boton-borde" id="atras">← Atrás</button>
+          <span class="espacio"></span>
+          <button type="button" class="boton boton-principal" id="siguiente">Siguiente →</button>
+          <button type="submit" class="boton boton-principal oculto" id="enviar">Enviar y pedir mi boceto</button>
+        </div>
+        <p class="aviso">El boceto es gratis y sin compromiso. Tus datos solo los uso para contactarte.</p>
+      </form>
+    </div>
+  </main>
+
+  <script>
+    const form = document.getElementById('formulario');
+    const pasos = [...form.querySelectorAll('.paso')];
+    const btnAtras = document.getElementById('atras');
+    const btnSiguiente = document.getElementById('siguiente');
+    const btnEnviar = document.getElementById('enviar');
+    const barra = document.getElementById('barra-progreso');
+    const textoProgreso = document.getElementById('texto-progreso');
+    const CLAVE = 'azulado-quiero-mi-web';
+    let actual = 0;
+
+    // Guardar el borrador en el navegador por si la persona sale y vuelve
+    function guardar() {
+      try {
+        const datos = {};
+        form.querySelectorAll('input, textarea').forEach(el => {
+          if (el.type === 'hidden' || el.name === 'campo-trampa') return;
+          if (el.type === 'radio' || el.type === 'checkbox') { if (el.checked) datos[el.id] = true; }
+          else if (el.value) datos[el.id] = el.value;
+        });
+        datos._paso = actual;
+        localStorage.setItem(CLAVE, JSON.stringify(datos));
+      } catch (e) {}
+    }
+    function recuperar() {
+      try {
+        const datos = JSON.parse(localStorage.getItem(CLAVE) || 'null');
+        if (!datos) return;
+        Object.entries(datos).forEach(([id, v]) => {
+          const el = document.getElementById(id);
+          if (!el) return;
+          if (el.type === 'radio' || el.type === 'checkbox') el.checked = true; else el.value = v;
+        });
+        if (Number.isInteger(datos._paso)) actual = Math.min(datos._paso, pasos.length - 1);
+      } catch (e) {}
+    }
+
+    // Textos que cambian si todavía es una idea
+    const textosOriginales = new Map();
+    form.querySelectorAll('[data-texto-idea]').forEach(el => textosOriginales.set(el, el.textContent));
+    function adaptarTextos() {
+      const esIdea = document.getElementById('t-idea').checked;
+      textosOriginales.forEach((original, el) => { el.textContent = esIdea ? el.dataset.textoIdea : original; });
+      document.getElementById('negocio').required = !esIdea;
+    }
+
+    function mostrar(i) {
+      pasos.forEach((p, n) => p.classList.toggle('activo', n === i));
+      const ultimo = i === pasos.length - 1;
+      btnAtras.style.visibility = i === 0 ? 'hidden' : 'visible';
+      btnSiguiente.classList.toggle('oculto', ultimo);
+      btnEnviar.classList.toggle('oculto', !ultimo);
+      barra.style.width = ((i + 1) / pasos.length * 100) + '%';
+      textoProgreso.textContent = `Paso ${i + 1} de ${pasos.length}`;
+      adaptarTextos();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function validar(paso) {
+      let ok = true;
+      paso.querySelectorAll('.error').forEach(e => e.classList.remove('visible'));
+
+      // Grupos de opciones obligatorios
+      const gruposRadio = new Set([...paso.querySelectorAll('input[type=radio][required]')].map(r => r.name));
+      gruposRadio.forEach(nombre => {
+        if (!paso.querySelector(`input[name="${nombre}"]:checked`)) {
+          paso.querySelector(`[data-error="${nombre}"]`)?.classList.add('visible'); ok = false;
+        }
+      });
+      const objetivos = paso.querySelector('[data-grupo="objetivos"]');
+      if (objetivos && !objetivos.querySelector('input:checked')) {
+        paso.querySelector('[data-error="objetivos"]').classList.add('visible'); ok = false;
+      }
+
+      // "Otro" rubro necesita aclaración
+      if (paso.dataset.paso === '2') {
+        const otro = document.getElementById('r8').checked;
+        document.getElementById('rubro-otro').required = otro;
+      }
+
+      // Campos de texto
+      const campos = [...paso.querySelectorAll('input[type=text], input[type=tel], input[type=email], textarea')];
+      for (const c of campos) {
+        if (!c.checkValidity()) { if (ok) c.reportValidity(); ok = false; break; }
+      }
+      if (!ok) paso.querySelector('.error.visible')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return ok;
+    }
+
+    btnSiguiente.addEventListener('click', () => {
+      if (!validar(pasos[actual])) return;
+      actual++; mostrar(actual); guardar();
+    });
+    btnAtras.addEventListener('click', () => { if (actual > 0) { actual--; mostrar(actual); guardar(); } });
+
+    // En el paso 1, elegir una opción ya avanza
+    form.querySelectorAll('input[name="tipo"]').forEach(r => r.addEventListener('change', () => {
+      guardar(); setTimeout(() => { if (actual === 0) btnSiguiente.click(); }, 250);
+    }));
+
+    // Mostrar el campo "¿Cuál?" si el rubro es Otro
+    form.querySelectorAll('input[name="rubro"]').forEach(r => r.addEventListener('change', () => {
+      document.getElementById('rubro-otro-caja').classList.toggle('visible', document.getElementById('r8').checked);
+    }));
+
+    // Enter en un campo de texto = siguiente (no envía antes de tiempo)
+    form.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && e.target.tagName === 'INPUT' && actual < pasos.length - 1) {
+        e.preventDefault(); btnSiguiente.click();
+      }
+    });
+
+    form.addEventListener('input', guardar);
+    form.addEventListener('change', guardar);
+
+    form.addEventListener('submit', e => {
+      if (!validar(pasos[actual])) { e.preventDefault(); return; }
+      const juntar = g => [...form.querySelectorAll(`[data-grupo="${g}"] input:checked`)].map(c => c.value).join(', ');
+      document.getElementById('h-objetivos').value = juntar('objetivos');
+      document.getElementById('h-estilo').value = juntar('estilo') || 'Sin preferencia';
+      const negocio = document.getElementById('negocio').value.trim() || 'Idea nueva';
+      document.getElementById('asunto').value = `Nuevo pedido de web: ${negocio} (${document.getElementById('ciudad').value.trim()})`;
+      btnEnviar.disabled = true; btnEnviar.textContent = 'Enviando…';
+      try { localStorage.removeItem(CLAVE); } catch (err) {}
+    });
+
+    recuperar();
+    document.getElementById('rubro-otro-caja').classList.toggle('visible', document.getElementById('r8').checked);
+    mostrar(actual);
+  </script>
+</body>
+</html>

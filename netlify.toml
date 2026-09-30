@@ -1,0 +1,4 @@
+# Configuración de publicación en Netlify: sitio estático, sin build.
+# El formulario "quiero-mi-web" lo detecta Netlify solo (Forms).
+[build]
+  publish = "."
