@@ -1,0 +1,102 @@
+/* Azulado Estudio · estilos compartidos */
+:root {
+  --marino: #17143D;
+  --marino-2: #211D52;
+  --azul: #2F5BE7;
+  --azul-claro: #5A80FF;
+  --violeta: #8C52E8;
+  --violeta-claro: #A97CFF;
+  --indigo: #2A1F8F;
+  --llamita: #DCC8FF;
+  --lavanda: #F4F3FA;
+  --violeta-texto: #4B3F95;
+  --texto: #17143D;
+  --texto-suave: #5B5780;
+  --borde: #E2DFF2;
+  --blanco: #FFFFFF;
+  --wa: #25D366;
+  --radio: 18px;
+  --ancho: 1120px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: "Archivo", system-ui, sans-serif;
+  color: var(--texto);
+  background: var(--lavanda);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+img { max-width: 100%; display: block; }
+a { color: inherit; }
+.contenedor { width: min(var(--ancho), 100% - 32px); margin-inline: auto; }
+.titulo { font-family: "Archivo Black", sans-serif; font-weight: 400; line-height: 1.08; letter-spacing: -0.01em; }
+
+/* Botones */
+.boton {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  padding: 15px 26px; border-radius: 999px; border: 0; cursor: pointer;
+  font: 600 16px/1 "Archivo", sans-serif; text-decoration: none;
+  transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
+}
+.boton:hover { transform: translateY(-2px); }
+.boton-principal {
+  background: linear-gradient(135deg, var(--azul), var(--violeta));
+  color: var(--blanco);
+  box-shadow: 0 10px 30px -10px rgba(140, 82, 232, .7);
+}
+.boton-principal:hover { box-shadow: 0 14px 36px -10px rgba(140, 82, 232, .9); }
+.boton-claro { background: rgba(255,255,255,.1); color: var(--blanco); border: 1px solid rgba(255,255,255,.25); }
+.boton-claro:hover { background: rgba(255,255,255,.18); }
+.boton-borde { background: transparent; color: var(--texto); border: 1.5px solid var(--borde); }
+.boton-borde:hover { border-color: var(--violeta); }
+.boton svg { width: 20px; height: 20px; flex: none; }
+
+/* Barra superior */
+.barra {
+  position: fixed; inset: 0 0 auto; z-index: 50;
+  transition: background .3s ease, box-shadow .3s ease;
+}
+.barra.con-fondo { background: rgba(23, 20, 61, .92); backdrop-filter: blur(10px); box-shadow: 0 1px 0 rgba(255,255,255,.08); }
+.barra .contenedor { display: flex; align-items: center; justify-content: space-between; height: 72px; }
+.marca { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--blanco); }
+.marca svg { width: 30px; height: 33px; }
+.marca-texto { font-size: 20px; line-height: 1; }
+.marca-texto b { font-family: "Archivo Black", sans-serif; font-weight: 400; }
+.marca-texto span { font-weight: 400; opacity: .8; margin-left: 4px; }
+.barra nav { display: flex; align-items: center; gap: 28px; }
+.barra nav a { color: rgba(255,255,255,.8); text-decoration: none; font-size: 15px; }
+.barra nav a:hover { color: var(--blanco); }
+.barra nav .boton { padding: 11px 20px; font-size: 14px; color: var(--blanco); }
+@media (max-width: 760px) {
+  .barra nav a:not(.boton) { display: none; }
+}
+
+/* Pie */
+.pie { background: var(--marino); color: rgba(255,255,255,.7); padding: 40px 0; font-size: 14px; }
+.pie .contenedor { display: flex; flex-wrap: wrap; gap: 20px; align-items: center; justify-content: space-between; }
+.pie a { color: rgba(255,255,255,.85); text-decoration: none; }
+.pie a:hover { color: var(--blanco); }
+.pie-links { display: flex; flex-wrap: wrap; gap: 20px; }
+
+/* Botón flotante de WhatsApp */
+.wa-flotante {
+  position: fixed; right: 18px; bottom: 18px; z-index: 40;
+  width: 58px; height: 58px; border-radius: 50%;
+  background: var(--wa); color: var(--blanco);
+  display: grid; place-items: center;
+  box-shadow: 0 10px 26px -8px rgba(0,0,0,.45);
+  transition: transform .2s ease;
+}
+.wa-flotante:hover { transform: scale(1.07); }
+.wa-flotante svg { width: 30px; height: 30px; }
+
+/* Aparición al hacer scroll */
+.aparece { opacity: 0; transform: translateY(24px); transition: opacity .7s ease, transform .7s ease; }
+.aparece.visible { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .aparece { opacity: 1; transform: none; transition: none; }
+  * { animation: none !important; }
+}
