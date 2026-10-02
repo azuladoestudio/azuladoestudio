@@ -12,28 +12,87 @@
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Archivo+Black&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/estilos.css">
   <style>
-    body { background: var(--marino); min-height: 100svh; display: flex; flex-direction: column; }
-    .barra { position: sticky; background: var(--marino); }
-    .barra nav a.salir { display: inline; color: rgba(255,255,255,.7); font-size: 14px; }
-
-    main { flex: 1; display: flex; justify-content: center; padding: 20px 16px 60px; }
-    .tarjeta {
-      width: min(680px, 100%); background: var(--lavanda); border-radius: 26px;
-      padding: clamp(26px, 5vw, 48px); align-self: flex-start;
-      box-shadow: 0 40px 80px -40px rgba(0,0,0,.6);
+    /* Concepto: el cuestionario "enciende la llama". --avance (0 a 1) sube el resplandor del fondo
+       y --fuego agranda la llama del progreso. Acabados: marco doble, sombras en capas, relieve. */
+    :root {
+      --avance: 0;
+      --sombra-suave: inset 0 1px 0 rgba(255,255,255,.9), 0 1px 2px rgba(23,20,61,.07), 0 4px 10px -4px rgba(23,20,61,.10);
+      --sombra-alta: inset 0 1px 0 rgba(255,255,255,.9), 0 2px 4px rgba(23,20,61,.06), 0 12px 22px -10px rgba(75,63,149,.30);
+      --anillo: 0 0 0 4px rgba(140,82,232,.14);
     }
 
-    /* Progreso */
-    .progreso { display: flex; align-items: center; gap: 14px; margin-bottom: 34px; }
-    .progreso-barra { flex: 1; height: 8px; border-radius: 99px; background: var(--borde); overflow: hidden; }
-    .progreso-barra i { display: block; height: 100%; width: 0; border-radius: 99px; background: linear-gradient(90deg, var(--azul), var(--violeta)); transition: width .45s ease; }
-    .progreso span { font-size: 13px; font-weight: 600; color: var(--texto-suave); white-space: nowrap; }
+    body { background: var(--marino); min-height: 100svh; display: flex; flex-direction: column; }
+
+    /* Fondo: grano fino + resplandor que sube con el avance */
+    body::before {
+      content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: .35; mix-blend-mode: soft-light;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
+    }
+    .resplandor {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background:
+        radial-gradient(70% 55% at 50% 108%, rgba(140,82,232,.60), transparent 70%),
+        radial-gradient(45% 38% at 50% 112%, rgba(90,128,255,.55), transparent 70%);
+      opacity: calc(.3 + var(--avance) * .7);
+      transform: translateY(calc((1 - var(--avance)) * 30%));
+      transition: opacity 1s ease, transform 1.1s cubic-bezier(.2,.7,.2,1);
+    }
+
+    .barra { position: relative; z-index: 2; background: transparent; }
+    .barra nav a.salir { display: inline; color: rgba(255,255,255,.7); font-size: 14px; }
+
+    main { position: relative; z-index: 1; flex: 1; display: flex; justify-content: center; padding: 20px 16px 60px; }
+
+    /* Tarjeta con doble marco */
+    .marco {
+      width: min(692px, 100%); align-self: flex-start; padding: 6px; border-radius: 32px;
+      background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.14);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 50px 90px -40px rgba(0,0,0,.7);
+    }
+    .tarjeta {
+      border-radius: 26px; padding: clamp(24px, 5vw, 48px);
+      background: linear-gradient(180deg, var(--blanco), var(--lavanda) 150px);
+      border: 1px solid rgba(255,255,255,.9);
+      box-shadow: inset 0 1px 0 var(--blanco), 0 1px 2px rgba(23,20,61,.2), 0 10px 24px -10px rgba(23,20,61,.45);
+    }
+
+    /* Progreso: la llama crece paso a paso */
+    .progreso { display: flex; align-items: center; gap: 14px; margin-bottom: 32px; }
+    .llama { position: relative; width: 30px; height: 44px; flex: none; display: flex; align-items: flex-end; justify-content: center; }
+    .llama-cuerpo {
+      transform-origin: 50% 100%; transform: scale(var(--fuego, .55));
+      transition: transform .7s cubic-bezier(.3,1.5,.5,1), filter .7s ease;
+      filter: drop-shadow(0 4px calc(var(--fuego, .55) * 12px) rgba(140,82,232, calc(var(--fuego, .55) * .7)));
+    }
+    .llama-golpe { transform-origin: 50% 100%; }
+    .llama svg { display: block; width: 24px; height: 44px; transform-origin: 50% 100%; animation: titilar 1.8s ease-in-out infinite; }
+    @keyframes titilar {
+      0%, 100% { transform: scaleY(1) rotate(-1.5deg); }
+      50% { transform: scaleY(1.07) rotate(1.5deg); }
+    }
+    .chispa {
+      position: absolute; left: 50%; bottom: 55%; width: 5px; height: 5px; margin-left: -2.5px; border-radius: 50%;
+      background: var(--violeta-claro); box-shadow: 0 0 8px var(--violeta); pointer-events: none;
+    }
+    .progreso-tramos { flex: 1; display: flex; gap: 6px; }
+    .progreso-tramos i {
+      flex: 1; height: 8px; border-radius: 99px; overflow: hidden;
+      background: var(--borde); box-shadow: inset 0 1px 2px rgba(23,20,61,.12);
+    }
+    .progreso-tramos i::after {
+      content: ""; display: block; height: 100%; border-radius: inherit;
+      background: linear-gradient(90deg, var(--azul), var(--violeta));
+      transform: scaleX(0); transform-origin: 0 50%; transition: transform .5s cubic-bezier(.2,.7,.2,1);
+    }
+    .progreso-tramos i.hecho::after { transform: scaleX(1); }
+    .progreso-texto { font-size: 13px; font-weight: 600; color: var(--texto-suave); white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .ticker { display: inline-block; overflow: hidden; vertical-align: bottom; height: 1.55em; font-weight: 600; }
+    .ticker b { display: inline-block; font-weight: 600; color: var(--violeta-texto); }
 
     /* Pasos */
-    .paso { display: none; animation: entrar .4s ease; }
+    .paso { display: none; }
     .paso.activo { display: block; }
-    @keyframes entrar { from { opacity: 0; transform: translateX(18px); } to { opacity: 1; transform: none; } }
-    .paso h1 { font-size: clamp(26px, 4.5vw, 36px); margin-bottom: 8px; }
+    .paso h1 { font-size: clamp(26px, 4.5vw, 36px); margin-bottom: 8px; text-wrap: balance; }
     .paso > p.ayuda { color: var(--texto-suave); margin-bottom: 28px; font-size: 17px; }
 
     /* Campos */
@@ -43,37 +102,71 @@
     .campo input[type=text], .campo input[type=tel], .campo input[type=email], .campo textarea {
       width: 100%; padding: 15px 16px; border-radius: 14px; border: 1.5px solid var(--borde);
       background: var(--blanco); font: 16px "Archivo", sans-serif; color: var(--texto);
+      box-shadow: inset 0 2px 3px rgba(23,20,61,.05);
       transition: border-color .2s ease, box-shadow .2s ease;
     }
     .campo textarea { min-height: 110px; resize: vertical; }
-    .campo input:focus, .campo textarea:focus { outline: 0; border-color: var(--violeta); box-shadow: 0 0 0 4px rgba(140,82,232,.15); }
+    .campo input:hover, .campo textarea:hover { border-color: var(--llamita); }
+    .campo input:focus, .campo textarea:focus { outline: 0; border-color: var(--violeta); box-shadow: inset 0 2px 3px rgba(23,20,61,.04), var(--anillo); }
     .campo input::placeholder, .campo textarea::placeholder { color: #A5A1C4; }
 
     /* Opciones grandes (paso 1) */
     .opciones-grandes { display: grid; gap: 12px; }
     .opcion-grande input { position: absolute; opacity: 0; pointer-events: none; }
     .opcion-grande label {
-      display: flex; align-items: center; gap: 16px; padding: 18px 20px; border-radius: 16px; cursor: pointer;
-      background: var(--blanco); border: 1.5px solid var(--borde); transition: border-color .2s ease, transform .15s ease, background .2s ease;
+      position: relative; overflow: hidden;
+      display: flex; align-items: center; gap: 16px; padding: 18px 20px; border-radius: 18px; cursor: pointer;
+      background: var(--blanco); border: 1.5px solid var(--borde); box-shadow: var(--sombra-suave);
+      transition: border-color .2s ease, transform .2s ease, background .2s ease, box-shadow .25s ease;
     }
-    .opcion-grande label:hover { border-color: var(--violeta-claro); transform: translateY(-1px); }
-    .opcion-grande .icono { width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; background: #ECE6FB; color: var(--violeta); flex: none; }
+    .opcion-grande label > * { position: relative; }
+    .opcion-grande label > span:last-of-type { flex: 1; min-width: 0; }
+    /* Luz que sigue al mouse */
+    .opcion-grande label::before {
+      content: ""; position: absolute; inset: 0; opacity: 0; transition: opacity .3s ease;
+      background: radial-gradient(200px circle at var(--mx, 50%) var(--my, 50%), rgba(140,82,232,.16), transparent 70%);
+    }
+    .opcion-grande label::after {
+      content: "→"; position: relative; font-size: 20px; color: var(--violeta);
+      opacity: 0; transform: translateX(-8px); transition: opacity .2s ease, transform .25s ease;
+    }
+    @media (hover: hover) {
+      .opcion-grande label:hover { border-color: var(--violeta-claro); transform: translateY(-2px); box-shadow: var(--sombra-alta); }
+      .opcion-grande label:hover::before { opacity: 1; }
+      .opcion-grande label:hover::after { opacity: 1; transform: none; }
+    }
+    .opcion-grande label:active { transform: translateY(0) scale(.99); }
+    .opcion-grande .icono {
+      width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; flex: none;
+      background: linear-gradient(180deg, #F3EEFD, #E6DEFA); color: var(--violeta);
+      box-shadow: inset 0 1px 0 var(--blanco), inset 0 -1px 0 rgba(75,63,149,.12), 0 1px 2px rgba(75,63,149,.15);
+      transition: background .2s ease, color .2s ease;
+    }
     .opcion-grande .icono svg { width: 24px; height: 24px; }
     .opcion-grande b { display: block; font-size: 17px; }
     .opcion-grande small { color: var(--texto-suave); font-size: 14px; }
-    .opcion-grande input:checked + label { border-color: var(--violeta); background: #F7F3FF; box-shadow: 0 0 0 4px rgba(140,82,232,.12); }
-    .opcion-grande input:checked + label .icono { background: linear-gradient(135deg, var(--azul), var(--violeta)); color: var(--blanco); }
+    .opcion-grande input:checked + label { border-color: var(--violeta); background: #F7F3FF; box-shadow: var(--sombra-alta), var(--anillo); }
+    .opcion-grande input:checked + label::after { opacity: 1; transform: none; }
+    .opcion-grande input:checked + label .icono {
+      background: linear-gradient(135deg, var(--azul), var(--violeta)); color: var(--blanco);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.35), inset 0 -2px 0 rgba(0,0,0,.15), 0 6px 14px -6px rgba(140,82,232,.8);
+    }
     .opcion-grande input:focus-visible + label { outline: 2px solid var(--violeta); outline-offset: 2px; }
 
-    /* Chips */
+    /* Chips con relieve */
     .chips { display: flex; flex-wrap: wrap; gap: 10px; }
     .chip input { position: absolute; opacity: 0; pointer-events: none; }
     .chip label {
-      display: inline-flex; align-items: center; gap: 8px; padding: 11px 16px; border-radius: 999px; cursor: pointer;
-      background: var(--blanco); border: 1.5px solid var(--borde); font-size: 15px; transition: all .2s ease; user-select: none;
+      display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 11px 16px; border-radius: 999px; cursor: pointer;
+      background: var(--blanco); border: 1.5px solid var(--borde); font-size: 15px; user-select: none;
+      box-shadow: var(--sombra-suave);
+      transition: border-color .2s ease, background .2s ease, color .2s ease, box-shadow .2s ease;
     }
     .chip label:hover { border-color: var(--violeta-claro); }
-    .chip input:checked + label { background: var(--marino); color: var(--blanco); border-color: var(--marino); }
+    .chip input:checked + label {
+      background: linear-gradient(180deg, var(--marino-2), var(--marino)); color: var(--blanco); border-color: var(--marino);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.18), 0 6px 14px -8px rgba(23,20,61,.8);
+    }
     .chip input:checked + label::before { content: "✓"; font-weight: 700; color: var(--llamita); }
     .chip input:focus-visible + label { outline: 2px solid var(--violeta); outline-offset: 2px; }
 
@@ -83,10 +176,11 @@
     .error { display: none; color: #C2255C; font-size: 14px; font-weight: 500; margin-top: 8px; }
     .error.visible { display: block; }
 
-    /* Navegación */
+    /* Navegación: botones con relieve */
     .navegacion { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 34px; }
-    .navegacion .boton-borde { padding: 14px 20px; }
     .navegacion .espacio { flex: 1; }
+    .navegacion .boton { min-height: 48px; }
+    .navegacion .boton-borde { padding: 14px 20px; background: var(--blanco); box-shadow: var(--sombra-suave); }
     .aviso { font-size: 13px; color: var(--texto-suave); margin-top: 18px; text-align: center; }
 
     .oculto { display: none !important; }
@@ -104,11 +198,19 @@
     </div>
   </header>
 
+  <div class="resplandor" aria-hidden="true"></div>
+
   <main>
+    <div class="marco">
     <div class="tarjeta">
       <div class="progreso" aria-hidden="true">
-        <div class="progreso-barra"><i id="barra-progreso"></i></div>
-        <span id="texto-progreso">Paso 1 de 6</span>
+        <div class="llama" id="llama">
+          <div class="llama-cuerpo"><div class="llama-golpe" id="llama-golpe">
+            <svg viewBox="56 4 32 86"><defs><linearGradient id="fuego" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#2F5BE7"/><stop offset=".6" stop-color="#8C52E8"/><stop offset="1" stop-color="#A97CFF"/></linearGradient></defs><path d="M70 6 C 74 18 88 30 86 50 C 85 62 80 68 80 74 L 80 80 Q 80 88 70 88 Q 60 88 60 80 L 60 62 C 56 52 58 40 64 30 C 66 26 68 20 70 6 Z" fill="url(#fuego)"/><path d="M71 42 C 74 49 79 53 78 61 C 77 67 73 71 70 71 C 66 71 64 67 65 62 C 66 56 70 51 71 42 Z" fill="#F1E8FF"/></svg>
+          </div></div>
+        </div>
+        <div class="progreso-tramos" id="tramos"></div>
+        <span class="progreso-texto">Paso <span class="ticker"><b id="num-paso">1</b></span> de <span id="total-pasos">6</span></span>
       </div>
 
       <!--
@@ -330,18 +432,29 @@
         <p class="aviso">El boceto es gratis y sin compromiso. Tus datos solo los uso para contactarte.</p>
       </form>
     </div>
+    </div>
   </main>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <script>
     const form = document.getElementById('formulario');
     const pasos = [...form.querySelectorAll('.paso')];
     const btnAtras = document.getElementById('atras');
     const btnSiguiente = document.getElementById('siguiente');
     const btnEnviar = document.getElementById('enviar');
-    const barra = document.getElementById('barra-progreso');
-    const textoProgreso = document.getElementById('texto-progreso');
+    const llama = document.getElementById('llama');
+    const llamaGolpe = document.getElementById('llama-golpe');
+    const numPaso = document.getElementById('num-paso');
     const CLAVE = 'azulado-quiero-mi-web';
     let actual = 0;
+
+    // Si GSAP no carga o la persona pidió menos movimiento, todo funciona igual pero sin animar
+    const calmo = !window.gsap || matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Un tramo de la barra por cada paso
+    const cajaTramos = document.getElementById('tramos');
+    const tramos = pasos.map(() => cajaTramos.appendChild(document.createElement('i')));
+    document.getElementById('total-pasos').textContent = pasos.length;
 
     // Guardar el borrador en el navegador por si la persona sale y vuelve
     function guardar() {
@@ -378,15 +491,60 @@
       document.getElementById('negocio').required = !esIdea;
     }
 
-    function mostrar(i) {
+    // Progreso: tramos, número, tamaño de la llama y resplandor del fondo
+    function pintarProgreso(i, dir) {
+      const avance = i / (pasos.length - 1);
+      tramos.forEach((t, n) => t.classList.toggle('hecho', n <= i));
+      document.documentElement.style.setProperty('--avance', avance);
+      llama.style.setProperty('--fuego', .55 + .45 * avance);
+      if (calmo || !dir) { numPaso.textContent = i + 1; return; }
+      gsap.to(numPaso, {
+        yPercent: -100 * dir, duration: .18, ease: 'power2.in',
+        onComplete: () => {
+          numPaso.textContent = i + 1;
+          gsap.fromTo(numPaso, { yPercent: 100 * dir }, { yPercent: 0, duration: .35, ease: 'power3.out' });
+        }
+      });
+    }
+
+    // La llama pega un salto y tira chispas al avanzar
+    function chispas() {
+      if (calmo) return;
+      gsap.fromTo(llamaGolpe, { scale: 1.4 }, { scale: 1, duration: .9, ease: 'elastic.out(1, .4)' });
+      for (let k = 0; k < 7; k++) {
+        const c = llama.appendChild(document.createElement('span'));
+        c.className = 'chispa';
+        gsap.fromTo(c, { x: 0, y: 0, opacity: 1, scale: 1 }, {
+          x: gsap.utils.random(-22, 22), y: gsap.utils.random(-58, -24), opacity: 0, scale: .3,
+          duration: gsap.utils.random(.5, .9), ease: 'power2.out', onComplete: () => c.remove()
+        });
+      }
+    }
+
+    // Entrada de cada paso: el título sube palabra por palabra y los campos entran en cascada
+    function animarPaso(paso, dir) {
+      if (calmo) return;
+      const titulo = paso.querySelector('h1');
+      titulo.innerHTML = titulo.textContent.trim().split(/\s+/).map(p => `<span class="pal"><span>${p}</span></span>`).join(' ');
+      gsap.fromTo(titulo.querySelectorAll('.pal > span'), { yPercent: 115 }, { yPercent: 0, duration: .6, ease: 'power4.out', stagger: .04 });
+      gsap.fromTo(paso.querySelectorAll('.ayuda, .opcion-grande, .campo'),
+        { opacity: 0, x: 22 * (dir || 1) },
+        { opacity: 1, x: 0, duration: .5, ease: 'power3.out', stagger: .05, delay: .08, clearProps: 'transform,opacity' });
+    }
+
+    function temblar(el) {
+      if (!calmo) gsap.fromTo(el, { x: -7 }, { x: 0, duration: .5, ease: 'elastic.out(1, .25)', clearProps: 'transform' });
+    }
+
+    function mostrar(i, dir = 0) {
       pasos.forEach((p, n) => p.classList.toggle('activo', n === i));
       const ultimo = i === pasos.length - 1;
       btnAtras.style.visibility = i === 0 ? 'hidden' : 'visible';
       btnSiguiente.classList.toggle('oculto', ultimo);
       btnEnviar.classList.toggle('oculto', !ultimo);
-      barra.style.width = ((i + 1) / pasos.length * 100) + '%';
-      textoProgreso.textContent = `Paso ${i + 1} de ${pasos.length}`;
+      pintarProgreso(i, dir);
       adaptarTextos();
+      animarPaso(pasos[i], dir);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -422,14 +580,14 @@
     }
 
     btnSiguiente.addEventListener('click', () => {
-      if (!validar(pasos[actual])) return;
-      actual++; mostrar(actual); guardar();
+      if (!validar(pasos[actual])) { temblar(btnSiguiente); return; }
+      actual++; mostrar(actual, 1); chispas(); guardar();
     });
-    btnAtras.addEventListener('click', () => { if (actual > 0) { actual--; mostrar(actual); guardar(); } });
+    btnAtras.addEventListener('click', () => { if (actual > 0) { actual--; mostrar(actual, -1); guardar(); } });
 
     // En el paso 1, elegir una opción ya avanza
     form.querySelectorAll('input[name="tipo"]').forEach(r => r.addEventListener('change', () => {
-      guardar(); setTimeout(() => { if (actual === 0) btnSiguiente.click(); }, 250);
+      guardar(); setTimeout(() => { if (actual === 0) btnSiguiente.click(); }, 320);
     }));
 
     // Mostrar el campo "¿Cuál?" si el rubro es Otro
@@ -447,8 +605,21 @@
     form.addEventListener('input', guardar);
     form.addEventListener('change', guardar);
 
+    // Rebote al marcar una opción
+    form.addEventListener('change', e => {
+      if (calmo || !e.target.checked || !e.target.matches('.chip input, .opcion-grande input')) return;
+      gsap.fromTo(e.target.nextElementSibling, { scale: .94 }, { scale: 1, duration: .45, ease: 'back.out(3)', clearProps: 'transform' });
+    });
+
+    // La luz de las opciones grandes sigue al mouse
+    form.querySelectorAll('.opcion-grande label').forEach(l => l.addEventListener('pointermove', e => {
+      const r = l.getBoundingClientRect();
+      l.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+      l.style.setProperty('--my', (e.clientY - r.top) + 'px');
+    }));
+
     form.addEventListener('submit', e => {
-      if (!validar(pasos[actual])) { e.preventDefault(); return; }
+      if (!validar(pasos[actual])) { e.preventDefault(); temblar(btnEnviar); return; }
       const juntar = g => [...form.querySelectorAll(`[data-grupo="${g}"] input:checked`)].map(c => c.value).join(', ');
       document.getElementById('h-objetivos').value = juntar('objetivos');
       document.getElementById('h-estilo').value = juntar('estilo') || 'Sin preferencia';
@@ -462,6 +633,7 @@
     recuperar();
     document.getElementById('rubro-otro-caja').classList.toggle('visible', document.getElementById('r8').checked);
     mostrar(actual);
+    if (!calmo) gsap.from('.marco', { y: 28, opacity: 0, duration: .9, ease: 'power3.out', clearProps: 'transform,opacity' });
   </script>
 </body>
 </html>
