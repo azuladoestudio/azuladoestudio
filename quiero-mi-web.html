@@ -112,13 +112,15 @@
       </div>
 
       <!--
-        Formulario de Netlify: al publicarse en Netlify, cada envío aparece en
-        Netlify > Forms > "quiero-mi-web" y te llega por mail si activás la notificación.
+        Formulario con FormSubmit: cada envío llega por mail a azuladoestudio@gmail.com.
+        El primer envío dispara un mail de activación que hay que confirmar una sola vez.
       -->
-      <form id="formulario" name="quiero-mi-web" method="POST" action="/gracias.html" data-netlify="true" netlify-honeypot="campo-trampa" novalidate>
-        <input type="hidden" name="form-name" value="quiero-mi-web">
-        <input type="hidden" name="subject" id="asunto" value="Nuevo pedido de web · Azulado Estudio">
-        <p class="oculto"><label>No completar: <input name="campo-trampa"></label></p>
+      <form id="formulario" name="quiero-mi-web" method="POST" action="https://formsubmit.co/azuladoestudio@gmail.com" novalidate>
+        <input type="hidden" name="_subject" id="asunto" value="Nuevo pedido de web · Azulado Estudio">
+        <input type="hidden" name="_next" id="siguiente-pagina" value="">
+        <input type="hidden" name="_template" value="table">
+        <input type="hidden" name="_captcha" value="false">
+        <p class="oculto"><label>No completar: <input name="_honey"></label></p>
 
         <!-- Los grupos de casillas se juntan en estos campos antes de enviar -->
         <input type="hidden" name="objetivos" id="h-objetivos">
@@ -346,7 +348,7 @@
       try {
         const datos = {};
         form.querySelectorAll('input, textarea').forEach(el => {
-          if (el.type === 'hidden' || el.name === 'campo-trampa') return;
+          if (el.type === 'hidden' || el.name === '_honey') return;
           if (el.type === 'radio' || el.type === 'checkbox') { if (el.checked) datos[el.id] = true; }
           else if (el.value) datos[el.id] = el.value;
         });
@@ -452,6 +454,7 @@
       document.getElementById('h-estilo').value = juntar('estilo') || 'Sin preferencia';
       const negocio = document.getElementById('negocio').value.trim() || 'Idea nueva';
       document.getElementById('asunto').value = `Nuevo pedido de web: ${negocio} (${document.getElementById('ciudad').value.trim()})`;
+      document.getElementById('siguiente-pagina').value = new URL('gracias.html', location.href).href;
       btnEnviar.disabled = true; btnEnviar.textContent = 'Enviando…';
       try { localStorage.removeItem(CLAVE); } catch (err) {}
     });
